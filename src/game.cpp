@@ -112,14 +112,16 @@ Board::Board(){
     Pawn *m_pawn=new Pawn(1);
     Pawn *m_bishop=new Pawn(2);
     Pawn *m_knight=new Pawn(3);
-    Pawn *m_queen=new Pawn(4);
-    Pawn *m_king=new Pawn(5);
+    Pawn *m_rook=new Pawn(4);
+    Pawn *m_queen=new Pawn(5);
+    Pawn *m_king=new Pawn(6);
 
 };
 Board::~Board() {
     delete m_pawn;
     delete m_bishop;
     delete m_knight;
+    delete m_rook
     delete m_queen;
     delete m_king;
 };
