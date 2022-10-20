@@ -109,14 +109,25 @@ Board::Board(){
                         {1,1,1,1,1,1,1,1},//  48-55
                         {4,3,2,6,5,2,3,4}};// 6-63
     m_board=&boardGame[0][0];//Pointer to the first element
+    Pawn *m_pawn=new Pawn(1);
+    Pawn *m_bishop=new Pawn(2);
+    Pawn *m_knight=new Pawn(3);
+    Pawn *m_queen=new Pawn(4);
+    Pawn *m_king=new Pawn(5);
 
 };
-Board::~Board() {};
+Board::~Board() {
+    delete m_pawn;
+    delete m_bishop;
+    delete m_knight;
+    delete m_queen;
+    delete m_king;
+};
 
-Pawn::Pawn(int type,Player master){
-    m_master=master;
+Pawn::Pawn(int type){
     m_type=type;
-    m_life=true;
+
+    
 
     /*
     ----Unit type information : 
