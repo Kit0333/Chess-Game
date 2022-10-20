@@ -16,6 +16,7 @@ public:
     void Game::gameStateChange(GameState x);
          
     void run();
+
 private:
 
     void clear();
@@ -34,14 +35,19 @@ public:
     ~Board();
 private:
     int *m_board;
+    Pawn *m_pawn;
+    Pawn *m_bishop;
+    Pawn *m_knight;
+    Pawn *m_queen;
+    Pawn *m_king;
 };
+
 enum class Player{P1,P2};
 class Pawn{
 public:
-    Pawn(int type,Player master);
+    Pawn(int type);
     ~Pawn();
 
 private:
     int m_type; 
-    Player m_master;  
 };
