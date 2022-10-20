@@ -99,7 +99,7 @@ int& Game::mousePress(SDL_MouseButtonEvent& b){
 
 
 Board::Board(){
-    int  boardGame[8][8]={                // Index:
+    static int  boardGame[8][8]={                // Index:
                         {4,3,2,5,6,2,3,4},//  0-7
                         {1,1,1,1,1,1,1,1},//  8-15
                         {0,0,0,0,0,0,0,0},//  16-23
