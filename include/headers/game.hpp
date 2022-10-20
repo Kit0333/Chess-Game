@@ -26,8 +26,22 @@ private:
     GameState m_gameState;
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
-
-
-
 };
 
+class Board{
+public:
+    Board();
+    ~Board();
+private:
+    int *m_board;
+};
+enum class Player{P1,P2};
+class Pawn{
+public:
+    Pawn(int type,Player master);
+    ~Pawn();
+
+private:
+    int m_type; 
+    Player m_master;  
+};
