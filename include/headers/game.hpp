@@ -50,4 +50,5 @@ public:
 
 private:
     int m_type; 
+    const char* m_info;
 };
