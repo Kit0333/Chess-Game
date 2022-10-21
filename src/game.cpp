@@ -32,8 +32,8 @@ void Game::UserScreenSize(int &width,int &height){
         height=600;
     }
     else{
-        width=displaymode.w-100;
-        height=displaymode.h-100;
+        width=displaymode.w;
+        height=displaymode.h;
     }
 
 };
