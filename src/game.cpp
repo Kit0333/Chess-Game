@@ -43,18 +43,18 @@ void Game::run(){
     clear();
 }
 
-void Game::render(SDL_Texture* tex){
+void Game::render(SDL_Texture* tex,int x=0,int y=0,int w=1920,int h=1080){
     SDL_Rect src;
-    src.x=0;
-    src.y=0;
-    src.w=1000;
-    src.h=1000;
+    src.x=x;
+    src.y=y;
+    src.w=w;
+    src.h=h;
 
     SDL_Rect dist;
-    dist.x=0;
-    dist.y=0;
-    dist.w=600;
-    dist.h=600;
+    dist.x=x;
+    dist.y=y;
+    dist.w=w;
+    dist.h=h;
 
     SDL_RenderCopy(m_renderer,tex,&src,&dist);
 };
