@@ -10,7 +10,7 @@ public:
     ~Game();
 
     SDL_Texture* loadTexture(const char* filePath);
-    void render(SDL_Texture* text);
+    void render(SDL_Texture* tex,int x=0,int y=0,int w=1920,int h=1080);
     GameState getGameState();
     int& mousePress(SDL_MouseButtonEvent& b);
     void Game::gameStateChange(GameState x);
