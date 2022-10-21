@@ -128,6 +128,11 @@ Board::~Board() {
 
 Pawn::Pawn(int type){
     m_type=type;
+    switch(type){
+            case 1:
+                m_info=IMG_LoadTexture(m_renderer,"res/img/pawnHelp");
+                break;
+          }
 
     
 
