@@ -130,8 +130,25 @@ Pawn::Pawn(int type){
     m_type=type;
     switch(type){
             case 1:
-                m_info=IMG_LoadTexture(m_renderer,"res/img/pawnHelp");
+                m_info="res/img/pawnHelp";
                 break;
+            case 2:
+                 m_info="res/img/bishopHelp";
+                 break;
+            case 3:
+                 m_info="res/img/knightHelp";
+                 break;
+            case 4:
+                 m_info="res/img/rookHelp";
+                 break;
+            case 5:
+                 m_info="res/img/queenHelp";
+                 break;
+            case 6:
+                 m_info="res/img/kingHelp";
+                 break;
+
+            
           }
 
     
