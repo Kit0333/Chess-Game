@@ -1,5 +1,6 @@
 #include <headers/game.hpp>
 #include <iostream>
+#include <vector>
 GameState Game::getGameState(){
     return m_gameState;
 };
@@ -8,15 +9,27 @@ void Game::gameStateChange(GameState x){
     m_gameState=x;
 };
 
+Player Game::getActualPlayer(){
+    return m_player;
+};
 
+void Game::playerSwitch(){
+    if (m_player==Plyaer::J1){
+        m_player=Player::J2;
+    }
+    else{
+        m_player=Player::J1;
+    }
+}
 
-Game::Game(const char* title,Uint32 flags) {
+Game::Game(const char* title,Uint32 flags,int &width,int &height) {
     SDL_Init(SDL_INIT_EVERYTHING);
-    int width,height;
+    
     UserScreenSize(width,height);
     m_window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, width,height, flags);
     m_renderer = SDL_CreateRenderer(m_window, -1, 0);
     m_gameState = GameState::PLAY;
+    m_player=Player::J1;
 };
 
 Game::~Game() {};
@@ -39,24 +52,24 @@ void Game::UserScreenSize(int &width,int &height){
 };
 
 void Game::run(){
-    display();
     clear();
+    display();
 }
 
-void Game::render(SDL_Texture* tex,int x=0,int y=0,int w=1920,int h=1080){
-    SDL_Rect src;
+void Game::render(SDL_Texture* tex,int x,int y,int w,int h){
+    /*SDL_Rect src;
     src.x=x;
     src.y=y;
     src.w=w;
     src.h=h;
-
+*/
     SDL_Rect dist;
     dist.x=x;
     dist.y=y;
     dist.w=w;
     dist.h=h;
 
-    SDL_RenderCopy(m_renderer,tex,&src,&dist);
+    SDL_RenderCopy(m_renderer,tex,NULL,&dist);
 };
 
 
@@ -100,8 +113,8 @@ int& Game::mousePress(SDL_MouseButtonEvent& b){
 
 Board::Board(){
     static int  boardGame[8][8]={                // Index:
-                        {4,3,2,5,6,2,3,4},//  0-7
-                        {1,1,1,1,1,1,1,1},//  8-15
+                        {14,13,12,15,16,12,13,14},//  0-7
+                        {11,11,11,11,11,11,11,11},//  8-15
                         {0,0,0,0,0,0,0,0},//  16-23
                         {0,0,0,0,0,0,0,0},//  24-31
                         {0,0,0,0,0,0,0,0},//  32-39
@@ -121,11 +134,14 @@ Board::~Board() {
     delete m_pawn;
     delete m_bishop;
     delete m_knight;
-    delete m_rook
+    delete m_rook;
     delete m_queen;
     delete m_king;
 };
 
+int Board::getBoardN(int i,int j){
+    return *(m_board+(i*8)+j);
+};
 Pawn::Pawn(int type){
     m_type=type;
     switch(type){
@@ -133,23 +149,21 @@ Pawn::Pawn(int type){
                 m_info="res/img/pawnHelp";
                 break;
             case 2:
-                 m_info="res/img/bishopHelp";
-                 break;
+                m_info="res/img/bishopHelp";
+                break;
             case 3:
-                 m_info="res/img/knightHelp";
-                 break;
+                m_info="res/img/knightHelp";
+                break;
             case 4:
-                 m_info="res/img/rookHelp";
-                 break;
+                m_info="res/img/rookHelp";
+                break;
             case 5:
-                 m_info="res/img/queenHelp";
-                 break;
+                m_info="res/img/queenHelp";
+                break;
             case 6:
-                 m_info="res/img/kingHelp";
-                 break;
-
-            
-          }
+                m_info="res/img/kingHelp";
+                break;
+            }
 
     
 
@@ -163,5 +177,9 @@ Pawn::Pawn(int type){
     6: King  
     
     */
+};
+
+int Board::trace(int &x1,int&y1,int&x2,int&y2){
+    return (y1*8)+x1-((y2*8)+x2)
 };
 Pawn::~Pawn(){};
