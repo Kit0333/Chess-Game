@@ -1,6 +1,5 @@
 #include <headers/game.hpp>
 #include <iostream>
-#include <vector>
 GameState Game::getGameState(){
     return m_gameState;
 };
@@ -14,7 +13,7 @@ Player Game::getActualPlayer(){
 };
 
 void Game::playerSwitch(){
-    if (m_player==Plyaer::J1){
+    if (m_player==Player::J1){
         m_player=Player::J2;
     }
     else{
@@ -139,8 +138,8 @@ Board::~Board() {
     delete m_king;
 };
 
-int Board::getBoardN(int i,int j){
-    return *(m_board+(i*8)+j);
+int Board::getBoardN(int x,int y){
+    return *(m_board+(y*8)+x);
 };
 Pawn::Pawn(int type){
     m_type=type;
@@ -180,6 +179,272 @@ Pawn::Pawn(int type){
 };
 
 int Board::trace(int &x1,int&y1,int&x2,int&y2){
-    return (y1*8)+x1-((y2*8)+x2)
+    return (y1*8)+x1-((y2*8)+x2);
+};
+void Board::modify(int newNum,int x,int y){
+    *(m_board+(y*8)+x)=newNum;
+};
+int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY ){
+    switch(ennemyPawnType){
+        case 1://if ennemy is a white pawn
+            if (this->trace(ennemyX,ennemyY,thisX,thisY)==-9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-7){
+                return 1;
+            }
+            else{
+                return 0;
+            }
+        case 2://if ennemy is a white bishop
+            int count(1);
+            if ((thisY-ennemyY)<0 &&(thisX-ennemyX)>0){
+                for(int i=-1;i>(thisY-ennemyY);i--){
+                    for(int j=1;j<(thisX-ennemyX);j++){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if ((count)==-(thisY-ennemyY)){
+                    return 2;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((thisY-ennemyY)<0 &&(thisX-ennemyX)<0){
+                for(int i=-1;i>(thisY-ennemyY);i--){
+                    for(int j=-1;j>(thisX-ennemyX);j--){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if((count)==-(thisY-ennemyY)){
+                    return 2;
+                }
+                else{
+                    return 0;
+                }
+
+
+            }
+            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)>0){
+                for(int i=1;i<(thisY-ennemyY);i++){
+                    for(int j=1;j>(thisX-ennemyX);j++){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if(count==(thisY-ennemyY)){
+                    return 2;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)<0){
+                for(int i=1;i<(thisY-ennemyY);i++){
+                    for(int j=-1;j>(thisX-ennemyX);j--){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                count++;
+                if (count==(thisY-ennemyY)){
+                    return 2;
+                }
+                else{
+                    return 0;
+                }
+            }
+        case 3://if ennemy is a white knight
+            return 3;
+        case 4://if ennemy is a white rook
+            int count(1);
+            if ((ennemyX==thisX)&&(ennemyY>thisY)){
+                for(int i=1;i<(ennemyY-thisY);i++){
+                    if(this->getBoardN(thisX,thisY+i)){
+                        count++;
+                    }
+                }
+                if(count==(ennemyY-thisY)){
+                    return 4;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((ennemyX==thisX)&&(ennemyY<thisY)){
+                for(int i=-1;i>(ennemyY-thisY);i--){
+                    if(this->getBoardN(thisX,thisY+i)){
+                        count++;
+                    }
+                }
+                if(count==-(ennemyY-thisY)){
+                    return 4;
+                }
+                else{
+                    return 0;
+                }
+
+            }
+            else if ((ennemyY==thisY)&&(ennemyX>thisX)){
+                for(int j=1;j<(ennemyX-thisX);j++){
+                    if(this->getBoardN(thisX+j,thisY)){
+                        count++;
+                    }
+                }
+                if(count==(ennemyX-thisX)){
+                    return 4;
+                }
+                else{
+                    return 0;
+                }
+
+            }
+            else if ((ennemyY==thisY)&&(ennemyX<thisX)){
+                for(int j=-1;j<(ennemyX-thisX);j--){
+                    if(this->getBoardN(thisX+j,thisY)==0){
+                        count++;
+                    }
+                }
+                if(count==-(ennemyX-thisX)){
+                    return 4;
+                }
+                else{
+                    return 0;
+                }
+            }
+        case 5:// if ennemy is a white queen ( can use the code from case 2 and 4( bishop + rook))
+            int count(1);
+            if ((thisY-ennemyY)<0 &&(thisX-ennemyX)>0){
+                for(int i=-1;i>(thisY-ennemyY);i--){
+                    for(int j=1;j<(thisX-ennemyX);j++){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if (count==-(thisY-ennemyY)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((thisY-ennemyY)<0 &&(thisX-ennemyX)<0){
+                for(int i=-1;i>(thisY-ennemyY);i--){
+                    for(int j=-1;j>(thisX-ennemyX);j--){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if(count==-(thisY-ennemyY)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+
+
+            }
+            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)>0){
+                for(int i=1;i<(thisY-ennemyY);i++){
+                    for(int j=1;j>(thisY-ennemyY);j++){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if(count==(thisY-ennemyY)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)<0){
+                for(int i=1;i<(thisY-ennemyY);i++){
+                    for(int j=-1;j>(thisY-ennemyY);j--){
+                        if(this->getBoardN(thisY+i,thisX+j)==0){
+                            count++;
+                        }
+                    }
+                }
+                if (count==(thisY-ennemyY)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((ennemyX==thisX)&&(ennemyY>thisY)){
+                for(int i=1;i<(ennemyY-thisY);i++){
+                    if(this->getBoardN(thisX,thisY+i)){
+                        count++;
+                    }
+                }
+                if(count==(ennemyY-thisY)){
+                    return 4;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else if ((ennemyX==thisX)&&(ennemyY<thisY)){
+                for(int i=-1;i>(ennemyY-thisY);i--){
+                    if(this->getBoardN(thisX,thisY+i)){
+                        count++;
+                    }
+                }
+                if(count==-(ennemyY-thisY)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+
+            }
+            else if ((ennemyY==thisY)&&(ennemyX>thisX)){
+                for(int j=1;j<(ennemyX-thisX);j++){
+                    if(this->getBoardN(thisX+j,thisY)){
+                        count++;
+                    }
+                }
+                if(count==(ennemyX-thisX)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+
+            }
+            else if ((ennemyY==thisY)&&(ennemyX<thisX)){
+                for(int j=-1;j<(ennemyX-thisX);j--){
+                    if(this->getBoardN(thisX+j,thisY)==0){
+                        count++;
+                    }
+                }
+                if(count==-(ennemyX-thisX)){
+                    return 5;
+                }
+                else{
+                    return 0;
+                }
+            }
+                    
+        case 6://if ennemy is the white king
+            if (this->trace(ennemyX,ennemyY,thisX,thisY)==-9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==8||this->trace(ennemyX,ennemyY,thisX,thisY)==-7||this->trace(ennemyX,ennemyY,thisX,thisY)==7||this->trace(ennemyX,ennemyY,thisX,thisY)==8 ||this->trace(ennemyX,ennemyY,thisX,thisY)==9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-1||this->trace(ennemyX,ennemyY,thisX,thisY)==1){
+                return 6;
+            }
+            else{
+                return 0;
+            }
+        default:
+            return 0;
+
+    }
 };
 Pawn::~Pawn(){};
