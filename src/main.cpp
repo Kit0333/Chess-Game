@@ -58,10 +58,9 @@ int main(int argc,char* argv[]){
                             selectedPawn[0]=xPawn;
                             selectedPawn[1]=yPawn;
                         }
-                        else if (board->getBoardN(xPawn,yPawn)>10 || board->getBoardN(xPawn,yPawn)&& hasBeenChosed==true ){// we verify if the selected one where we attack is an ennemy or a void case 
+                        else if ((board->getBoardN(xPawn,yPawn)>10 || board->getBoardN(xPawn,yPawn)==0 )&& hasBeenChosed==true&& xPawn!=selectPawn[0] && yPawn!=selectPawn[1]){// we verify if the selected one where we attack is an ennemy or a void case 
                             //One pawn is already selected to attack, now it's the click to attack
-                            canAttack==true;
-                            hasBeenChosed=false;
+        
                             board->modify(0,selectedPawn[0],selectedPawn[1]);
                             board->modify(hasBeenChosedNumber,xPawn,yPawn);
                             hasBeenChosed=false;//reset after attack
@@ -73,8 +72,7 @@ int main(int argc,char* argv[]){
                             selectedPawn[0]=xPawn;
                             selectedPawn[1]=yPawn;
                             }
-                        else if (board->getBoardN(xPawn,yPawn)<7 && hasBeenChosed==true){
-                            canAttack==true;
+                        else if (board->getBoardN(xPawn,yPawn)<7 && hasBeenChosed==true &&xPawn!=selectPawn[0]&&yPawn!=selectPawn[1]){
                             board->modify(0,selectedPawn[0],selectedPawn[1]);
                             board->modify(hasBeenChosedNumber,xPawn,yPawn);
                             hasBeenChosed=false;
