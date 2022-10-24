@@ -25,10 +25,11 @@ int main(int argc,char* argv[]){
     Uint32 click;
     Board *board=new Board();
     int actualBoardNum(-1);
-    int onClickPawn[2]={-1,-1};
+    int selectedPawn[2]={-1,-1};
     int xPawn(0);
     int yPawn(0);
     bool hasBeenChosed=false;
+    bool canAttack;
     int hasBeenChosedNumber(-1);
 
     
@@ -49,19 +50,36 @@ int main(int argc,char* argv[]){
                 if (posXMouse>840){
                     xPawn=(posXMouse-840)%135;
                     yPawn=posYMouse%135;
-                    if(game.getActualPlayer==Player::J1){
+                    if(game.getActualPlayer()==Player::J1){
                         //We check which case got clicked on which turn (you can't click on ennemy's pawn on your turn )
                         //So later we can show on which case you can go with the specific pawn
-                        if(board->getBoardN(xPawn,yPawn)<7 && board->getBoardN(xPawn,yPawn)!=0){
-                            onClickPawn[0]=xPawn;
-                            onClickPawn[1]=yPawn;
+                        if(board->getBoardN(xPawn,yPawn)<7 && board->getBoardN(xPawn,yPawn)!=0 && hasBeenChosed==false){
+                            /*When nodoy is ready to attack, in selectedPawn we stock x,y of the pawn that we selected to be ready to attack*/
+                            selectedPawn[0]=xPawn;
+                            selectedPawn[1]=yPawn;
+                        }
+                        else if (board->getBoardN(xPawn,yPawn)>10 || board->getBoardN(xPawn,yPawn)&& hasBeenChosed==true ){// we verify if the selected one where we attack is an ennemy or a void case 
+                            //One pawn is already selected to attack, now it's the click to attack
+                            canAttack==true;
+                            hasBeenChosed=false;
+                            board->modify(0,selectedPawn[0],selectedPawn[1]);
+                            board->modify(hasBeenChosedNumber,xPawn,yPawn);
+                            hasBeenChosed=false;//reset after attack
+                            hasBeenChosedNumber=-1;//reset after attack
                         }
                     }
                     else{
-                        if(board->getBoardN(xPawn,yPawn)>6){
-                            onClickPawn[0]=xPawn;
-                            onClickPawn[1]=yPawn;
+                        if(board->getBoardN(xPawn,yPawn)>6 && hasBeenChosed==false){
+                            selectedPawn[0]=xPawn;
+                            selectedPawn[1]=yPawn;
                             }
+                        else if (board->getBoardN(xPawn,yPawn)<7 && hasBeenChosed==true){
+                            canAttack==true;
+                            board->modify(0,selectedPawn[0],selectedPawn[1]);
+                            board->modify(hasBeenChosedNumber,xPawn,yPawn);
+                            hasBeenChosed=false;
+                            hasBeenChosedNumber=-1;
+                        }
                         }
                 }
             break;
@@ -74,15 +92,16 @@ int main(int argc,char* argv[]){
         for(int i=0;i<8;i++){
             for(int j=0;j<8;j++){
                 actualBoardNum=board->getBoardN(i,j);
-                if(hasBeenChosed==true){
-                    int chosenNumber=board->getBoardN(onClickPawn[0],onClickPawn[1]);
-                }
+                //if(hasBeenChosed==true){
+                //    int chosenNumber=board->getBoardN(onClickPawn[0],onClickPawn[1]);
+                //}
                 switch(actualBoardNum){
                     //The side on the bot (white)
                     case 1 :
                         if (board->getBoardN(xPawn,yPawn)==1 &&yPawn==i && xPawn==j && hasBeenChosed==false){
                             game.render(pawnImageChosen,845+(135*j),i*135+5,127,127);
                             hasBeenChosed=true;
+                            hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{            
                             game.render(pawnImage,845+(135*j),i*135+5,127,127);
@@ -92,6 +111,7 @@ int main(int argc,char* argv[]){
                         if (board->getBoardN(xPawn,yPawn)==2 &&yPawn==i && xPawn==j && hasBeenChosed==false){
                             game.render(bishopImageChosen,845+(135*j),i*135+5,127,127);
                             hasBeenChosed=true;
+                            hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
                             game.render(bishopImage,845+(135*j),i*135,130,130);
@@ -101,15 +121,17 @@ int main(int argc,char* argv[]){
                         if (board->getBoardN(xPawn,yPawn)==3 &&yPawn==i && xPawn==j && hasBeenChosed==false){
                                 game.render(knightImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
+                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            game.render(knightImage,845+(135*j),i*135,130,130)
+                            game.render(knightImage,845+(135*j),i*135,130,130);
                         }
                         break;
                     case 4:
                         if (board->getBoardN(xPawn,yPawn)==4 &&yPawn==i && xPawn==j && hasBeenChosed==false){
                                 game.render(rookImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
+                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
                             game.render(rookImage,845+(135*j),i*135,130,130);
@@ -119,6 +141,7 @@ int main(int argc,char* argv[]){
                         if (board->getBoardN(xPawn,yPawn)==5 &&yPawn==i && xPawn==j && hasBeenChosed==false){
                                 game.render(queenImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
+                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
                             game.render(queenImage,845+(135*j),i*135,130,130);
@@ -128,6 +151,7 @@ int main(int argc,char* argv[]){
                         if (board->getBoardN(xPawn,yPawn)==6 &&yPawn==i,&& xPawn==j){
                                 game.render(kingImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
+                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
                             game.render(kingImage,845+(135*j),i*135,130,130);
@@ -137,30 +161,31 @@ int main(int argc,char* argv[]){
                         if (board->getBoardN(xPawn,yPawn)==11 &&yPawn==i,&& xPawn==j && hasBeenChosed==false){
                                 game.render(pawn2ImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
+                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true&&game.getActualPlayer()==J1 ){
-                                switch(hasBeenChosedNumber){
-                                    case 1:
+                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                                    case 0://it return 0 when this
+                                        break;
                                         //we check if he can  touch him
-                                        if (board->trace(i,j,onClickPawn[0],onClickPawn[1])==-1 ||board->trace(i,j,onClickPawn[0],onClickPawn[1]==1)
                                         //(board->getBoardN(onClickPawn[0]+1,onClickPawn[1]-1)==board->getBoardN(i,j) || board->getBoardN(onClickPawn[0]+1,onClickPawn[1]+1)==board->getBoardN(i,j))
                                         //the code above is a test ,currently I'm not sure about the verification
-                                        {
-                                            game.render(pawn2ImageCanBeenAttacked,845+(135*j),i*135,130,130)
-                                        }
+                                    default:    
+                                        game.render(pawn2ImageCanBeenAttacked,845+(135*j),i*135,130,130);
                                         break;
+                                    
                                         
                                 }
                                 
                             }
-                            else{
+                            else{//normal render when this pawn is not the selected one and it can be attacked by ennemy's pawn
                             game.render(pawn2Image,845+(135*j),i*135,130,130);
                             }
                         }
                         break;
                     case 12:
-                        if (board->getBoardN(xPawn,yPawn)==12 &&yPawn==i,&& xPawn==j){
+                        if (board->getBoardN(xPawn,yPawn)==12 &&yPawn==i && xPawn==j){
                                 game.render(bishop2ImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
                         }
@@ -169,7 +194,7 @@ int main(int argc,char* argv[]){
                         }
                         break;
                     case 13:
-                        if (board->getBoardN(xPawn,yPawn)==13 &&yPawn==i,&& xPawn==j){
+                        if (board->getBoardN(xPawn,yPawn)==13 &&yPawn==i && xPawn==j){
                                 game.render(knight2ImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
                         }
@@ -178,7 +203,7 @@ int main(int argc,char* argv[]){
                         }
                         break;
                     case 14:
-                        if (board->getBoardN(xPawn,yPawn)==14 &&yPawn==i,&& xPawn==j){
+                        if (board->getBoardN(xPawn,yPawn)==14 &&yPawn==i && xPawn==j){
                                 game.render(rook2ImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
                         }
@@ -187,7 +212,7 @@ int main(int argc,char* argv[]){
                         }
                         break;
                     case 15:
-                        if (board->getBoardN(xPawn,yPawn)==15 &&yPawn==i,&& xPawn==j){
+                        if (board->getBoardN(xPawn,yPawn)==15 &&yPawn==i && xPawn==j){
                                 game.render(quueen2ImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
                         }
@@ -196,7 +221,7 @@ int main(int argc,char* argv[]){
                         }
                         break;
                     case 16:
-                        if (board->getBoardN(xPawn,yPawn)==3 &&yPawn==i,&& xPawn==j){
+                        if (board->getBoardN(xPawn,yPawn)==3 &&yPawn==i && xPawn==j){
                                 game.render(king2ImageChosen,845+(135*j),i*135+5,127,127);
                                 hasBeenChosed=true;
                         }
@@ -204,6 +229,7 @@ int main(int argc,char* argv[]){
                             game.render(king2Image,845+(135*j),i*135,130,130);
                         }
                         break;
+                    case 0://if there is no pawn on this case, i will do it at the end
                 }
             }
         }
@@ -215,5 +241,3 @@ int main(int argc,char* argv[]){
     return 0;
 }
 
-    return 0;
-}
