@@ -47,8 +47,10 @@ class Board{
 public:
     Board();
     ~Board();
-    int getBoardN(int i,int j);
+    int getBoardN(int y,int x);
     int trace(int &x1,int&y1,int&x2,int&y2);
+    int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY );
+    void modify(int newNum,int x,int y);
 private:
     int *m_board;
     Pawn *m_pawn;
@@ -58,4 +60,3 @@ private:
     Pawn *m_queen;
     Pawn *m_king;
 };
-
