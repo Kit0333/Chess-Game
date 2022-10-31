@@ -187,11 +187,14 @@ void Board::modify(int newNum,int x,int y){
 int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY,int thisPawnType,Game game){
     int count(1);
     int playerMove;
+    int pawnControl;
     if(game.getActualPlayer()==Player::J1){
         playerMove=0;
+        pawnControl=1;
     }
     else{
         playerMove=10;
+        pawnControl=-1;
     }
     switch(ennemyPawnType){
         case 11:
@@ -216,7 +219,11 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
 
     switch(ennemyPawnType){
         case 1://if ennemy is a white pawn
-            if ((this->trace(ennemyX,ennemyY,thisX,thisY)==9 &&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
+         /*
+         We multiply by 1 if the ennemy is a white pawn,and -1 if ennemy is a black pawn.
+         Dark and white pawn got an opposite movement so if one is positive, the opposite is negative.
+         */
+            if ((this->trace(ennemyX,ennemyY,thisX,thisY)==(9*pawnControl) &&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==(7*pawnControl) &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==(8*pawnControl) && thisPawnType==0)){
                 return 1+playerMove;
             }
             else{
