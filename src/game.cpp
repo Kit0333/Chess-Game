@@ -242,17 +242,35 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
     switch(switchCase){
         case 1://if ennemy is a white pawn
             if(ennemyPawnType==11){
-                if((this->trace(ennemyX,ennemyY,thisX,thisY)==-9 &&thisPawnType<10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-7 &&thisPawnType<10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-8 && thisPawnType==0)){
-                return 1+playerMove;
+                if (ennemyY==1){
+                    if((this->trace(ennemyX,ennemyY,thisX,thisY)==-16  &&thisPawnType==0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-9 &&thisPawnType<10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-7 &&thisPawnType<10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-8 && thisPawnType==0)){
+                        return 1+playerMove;
+                    }
+                }
+                else{
+                    if((this->trace(ennemyX,ennemyY,thisX,thisY)==-9 &&thisPawnType<10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-7 &&thisPawnType<10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-8 && thisPawnType==0)){
+                        return 1+playerMove;
+                    }
+                
                 }
             }
             else{
-                if ((this->trace(ennemyX,ennemyY,thisX,thisY)==9&&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
-                return 1+playerMove;
-            }
-            else{
-                return 0;
-            }
+                if(ennemyY==6){
+                    if((this->trace(ennemyX,ennemyY,thisX,thisY)==16&&thisPawnType==0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==9&&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
+                       return 1+playerMove;
+                    }
+                    else{
+                        return 0;
+                    }
+                }
+                else{
+                    if((this->trace(ennemyX,ennemyY,thisX,thisY)==9&&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
+                       return 1+playerMove;
+                    }
+                    else{
+                        return 0;
+                    }
+                }
             }
             break;
         case 2://if ennemy is a white bishop
