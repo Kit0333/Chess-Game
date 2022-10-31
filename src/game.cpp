@@ -119,7 +119,7 @@ Board::Board(){
                         {0,0,0,0,0,0,0,0},//  32-39
                         {0,0,0,0,0,0,0,0},//  40-47
                         {1,1,1,1,1,1,1,1},//  48-55
-                        {4,3,2,6,5,2,3,4}};// 6-63
+                        {4,3,2,6,5,2,3,4}};// 56-63
     m_board=&boardGame[0][0];//Pointer to the first element
     Pawn *m_pawn=new Pawn(1);
     Pawn *m_bishop=new Pawn(2);
@@ -138,7 +138,7 @@ Board::~Board() {
     delete m_king;
 };
 
-int Board::getBoardN(int x,int y){
+int Board::getBoardN(int y,int x){
     return *(m_board+(y*8)+x);
 };
 Pawn::Pawn(int type){
@@ -179,97 +179,119 @@ Pawn::Pawn(int type){
 };
 
 int Board::trace(int &x1,int&y1,int&x2,int&y2){
-    return (y1*8)+x1-((y2*8)+x2);
+    return ((y1*8)+x1)-((y2*8)+x2);
 };
 void Board::modify(int newNum,int x,int y){
     *(m_board+(y*8)+x)=newNum;
 };
-int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY ){
+int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY,int thisPawnType,Game game){
+    int count(1);
+    int playerMove=NULL;
+    if (game.getActualPlayer()==Player::J1){
+        playerMove=0;
+    }
+    else{
+        playerMove=10;
+    }
+
     switch(ennemyPawnType){
         case 1://if ennemy is a white pawn
-            if (this->trace(ennemyX,ennemyY,thisX,thisY)==-9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-7){
-                return 1;
+            if ((this->trace(ennemyX,ennemyY,thisX,thisY)==9 &&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
+                return 1+playerMove;
             }
             else{
                 return 0;
             }
+            break;
         case 2://if ennemy is a white bishop
-            int count(1);
-            if ((thisY-ennemyY)<0 &&(thisX-ennemyX)>0){
-                for(int i=-1;i>(thisY-ennemyY);i--){
-                    for(int j=1;j<(thisX-ennemyX);j++){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+            count=1;
+            if (thisPawnType<10 &&thisPawnType!=0){
+                return 0;
+            }
+            if ((thisY<ennemyY) &&(thisX>ennemyX)){
+                for(int i=1;i<-(thisY-ennemyY);i++){
+                    if(this->getBoardN(ennemyY-i,ennemyX+i)==0){
+                        count++;
                     }
                 }
-                if ((count)==-(thisY-ennemyY)){
-                    return 2;
+                if ((count)==-(thisY-ennemyY)&&count==(thisX-ennemyX)){
+                    return 2+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
-            else if ((thisY-ennemyY)<0 &&(thisX-ennemyX)<0){
-                for(int i=-1;i>(thisY-ennemyY);i--){
-                    for(int j=-1;j>(thisX-ennemyX);j--){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+            else if ((thisY<ennemyY) &&(thisX<ennemyX)){
+                for(int i=1;i<-(thisY-ennemyY);i++){
+                    if(this->getBoardN(ennemyY-i,ennemyX-i)==0){
+                        count++;
                     }
+                    
                 }
-                if((count)==-(thisY-ennemyY)){
-                    return 2;
+                if((count)==(-(thisY-ennemyY))&&count==(-(thisX-ennemyX))){
+                    return 2+playerMove;
                 }
                 else{
                     return 0;
                 }
-
-
             }
-            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)>0){
+            else if ((thisY>ennemyY) &&(thisX>ennemyX)){
                 for(int i=1;i<(thisY-ennemyY);i++){
-                    for(int j=1;j>(thisX-ennemyX);j++){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+                    if(this->getBoardN(ennemyY+i,ennemyX+i)==0){
+                        count++;
                     }
+                    
                 }
-                if(count==(thisY-ennemyY)){
-                    return 2;
+                if(count==(thisY-ennemyY)&&count==(thisX-ennemyX)){
+                    return 2+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
-            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)<0){
+            else if ((thisY>ennemyY) &&(thisX<ennemyX)){
                 for(int i=1;i<(thisY-ennemyY);i++){
-                    for(int j=-1;j>(thisX-ennemyX);j--){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+                    if(this->getBoardN(ennemyY+i,ennemyX-i)==0){
+                        count++;
                     }
+                    
                 }
-                count++;
-                if (count==(thisY-ennemyY)){
-                    return 2;
+                if (count==(thisY-ennemyY)&&count==(-(thisX-ennemyX))){
+                    return 2+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
+            break;
         case 3://if ennemy is a white knight
-            return 3;
+            if (thisPawnType!=11&&thisPawnType!=12&&thisPawnType!=13&&thisPawnType!=14&&thisPawnType!=15&&thisPawnType!=16&&thisPawnType!=0){
+                return 0;
+            }
+            if(((ennemyX-1)==thisX &&(ennemyY-2)==thisY) || ((ennemyX+1)==thisX&&(ennemyY-2)==thisY) ||
+               ((ennemyX-2)==thisX &&(ennemyY-1)==thisY) || ((ennemyX+2)==thisX&&(ennemyY-1)==thisY) ||
+               ((ennemyX-2)==thisX &&(ennemyY+1)==thisY) || ((ennemyX+2)==thisX&&(ennemyY+1)==thisY) ||
+               ((ennemyX-1)==thisX &&(ennemyY+2)==thisY) || ((ennemyX+1)==thisX&&(ennemyY+2)==thisY)  ){
+                return 3+playerMove;
+               }
+            else{
+                return 0;
+            }
+            break;
+            
         case 4://if ennemy is a white rook
-            int count(1);
+            if(thisPawnType<10&&thisPawnType!=0){
+                return 0;
+            }
+            count=1;
             if ((ennemyX==thisX)&&(ennemyY>thisY)){
                 for(int i=1;i<(ennemyY-thisY);i++){
-                    if(this->getBoardN(thisX,thisY+i)){
+                    if(this->getBoardN(thisY+i,thisX)==0){
                         count++;
                     }
                 }
                 if(count==(ennemyY-thisY)){
-                    return 4;
+                    return 4+playerMove;
                 }
                 else{
                     return 0;
@@ -277,12 +299,12 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             else if ((ennemyX==thisX)&&(ennemyY<thisY)){
                 for(int i=-1;i>(ennemyY-thisY);i--){
-                    if(this->getBoardN(thisX,thisY+i)){
+                    if(this->getBoardN(thisY+i,thisX)==0){
                         count++;
                     }
                 }
                 if(count==-(ennemyY-thisY)){
-                    return 4;
+                    return 4+playerMove;
                 }
                 else{
                     return 0;
@@ -291,12 +313,12 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             else if ((ennemyY==thisY)&&(ennemyX>thisX)){
                 for(int j=1;j<(ennemyX-thisX);j++){
-                    if(this->getBoardN(thisX+j,thisY)){
+                    if(this->getBoardN(thisY,thisX+j)==0){
                         count++;
                     }
                 }
                 if(count==(ennemyX-thisX)){
-                    return 4;
+                    return 4+playerMove;
                 }
                 else{
                     return 0;
@@ -304,77 +326,71 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
 
             }
             else if ((ennemyY==thisY)&&(ennemyX<thisX)){
-                for(int j=-1;j<(ennemyX-thisX);j--){
-                    if(this->getBoardN(thisX+j,thisY)==0){
+                for(int j=1;j<-(ennemyX-thisX);j++){
+                    if(this->getBoardN(thisY,thisX-j)==0){
                         count++;
                     }
                 }
                 if(count==-(ennemyX-thisX)){
-                    return 4;
+                    return 4+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
+            break;
         case 5:// if ennemy is a white queen ( can use the code from case 2 and 4( bishop + rook))
-            int count(1);
-            if ((thisY-ennemyY)<0 &&(thisX-ennemyX)>0){
-                for(int i=-1;i>(thisY-ennemyY);i--){
-                    for(int j=1;j<(thisX-ennemyX);j++){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+            count=1;
+            if ((thisY<ennemyY) &&(thisX>ennemyX)){
+                for(int i=1;i<-(thisY-ennemyY);i++){
+                    if(this->getBoardN(ennemyY-i,ennemyX+i)==0){
+                        count++;
                     }
                 }
-                if (count==-(thisY-ennemyY)){
-                    return 5;
+                if ((count)==-(thisY-ennemyY)&&count==(thisX-ennemyX)){
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
-            else if ((thisY-ennemyY)<0 &&(thisX-ennemyX)<0){
-                for(int i=-1;i>(thisY-ennemyY);i--){
-                    for(int j=-1;j>(thisX-ennemyX);j--){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+            else if ((thisY<ennemyY) &&(thisX<ennemyX)){
+                for(int i=1;i<-(thisY-ennemyY);i++){
+                    if(this->getBoardN(ennemyY-i,ennemyX-i)==0){
+                        count++;
                     }
+                    
                 }
-                if(count==-(thisY-ennemyY)){
-                    return 5;
+                if((count)==(-(thisY-ennemyY))&&count==(-(thisX-ennemyX))){
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
                 }
-
-
             }
-            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)>0){
+            else if ((thisY>ennemyY) &&(thisX>ennemyX)){
                 for(int i=1;i<(thisY-ennemyY);i++){
-                    for(int j=1;j>(thisY-ennemyY);j++){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+                    if(this->getBoardN(ennemyY+i,ennemyX+i)==0){
+                        count++;
                     }
+                    
                 }
-                if(count==(thisY-ennemyY)){
-                    return 5;
+                if(count==(thisY-ennemyY)&&count==(thisX-ennemyX)){
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
-            else if ((thisY-ennemyY)>0 &&(thisX-ennemyX)<0){
+            else if ((thisY>ennemyY) &&(thisX<ennemyX)){
                 for(int i=1;i<(thisY-ennemyY);i++){
-                    for(int j=-1;j>(thisY-ennemyY);j--){
-                        if(this->getBoardN(thisY+i,thisX+j)==0){
-                            count++;
-                        }
+                    if(this->getBoardN(ennemyY+i,ennemyX-i)==0){
+                        count++;
                     }
+                    
                 }
-                if (count==(thisY-ennemyY)){
-                    return 5;
+                if (count==(thisY-ennemyY)&&count==(-(thisX-ennemyX))){
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
@@ -382,12 +398,12 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             else if ((ennemyX==thisX)&&(ennemyY>thisY)){
                 for(int i=1;i<(ennemyY-thisY);i++){
-                    if(this->getBoardN(thisX,thisY+i)){
+                    if(this->getBoardN(thisY+i,thisX)==0){
                         count++;
                     }
                 }
                 if(count==(ennemyY-thisY)){
-                    return 4;
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
@@ -395,12 +411,12 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             else if ((ennemyX==thisX)&&(ennemyY<thisY)){
                 for(int i=-1;i>(ennemyY-thisY);i--){
-                    if(this->getBoardN(thisX,thisY+i)){
+                    if(this->getBoardN(thisY+i,thisX)==0){
                         count++;
                     }
                 }
                 if(count==-(ennemyY-thisY)){
-                    return 5;
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
@@ -409,12 +425,12 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             else if ((ennemyY==thisY)&&(ennemyX>thisX)){
                 for(int j=1;j<(ennemyX-thisX);j++){
-                    if(this->getBoardN(thisX+j,thisY)){
+                    if(this->getBoardN(thisY,thisX+j)==0){
                         count++;
                     }
                 }
                 if(count==(ennemyX-thisX)){
-                    return 5;
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
@@ -422,29 +438,36 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
 
             }
             else if ((ennemyY==thisY)&&(ennemyX<thisX)){
-                for(int j=-1;j<(ennemyX-thisX);j--){
-                    if(this->getBoardN(thisX+j,thisY)==0){
+                for(int j=1;j<-(ennemyX-thisX);j++){
+                    if(this->getBoardN(thisY,thisX-j)==0){
                         count++;
                     }
                 }
                 if(count==-(ennemyX-thisX)){
-                    return 5;
+                    return 5+playerMove;
                 }
                 else{
                     return 0;
                 }
             }
+            break;
                     
         case 6://if ennemy is the white king
-            if (this->trace(ennemyX,ennemyY,thisX,thisY)==-9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==8||this->trace(ennemyX,ennemyY,thisX,thisY)==-7||this->trace(ennemyX,ennemyY,thisX,thisY)==7||this->trace(ennemyX,ennemyY,thisX,thisY)==8 ||this->trace(ennemyX,ennemyY,thisX,thisY)==9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-1||this->trace(ennemyX,ennemyY,thisX,thisY)==1){
-                return 6;
+            if (thisPawnType<10&&thisPawnType!=0){
+                return 0;
+            }
+            if (this->trace(ennemyX,ennemyY,thisX,thisY)==9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==8||this->trace(ennemyX,ennemyY,thisX,thisY)==7||this->trace(ennemyX,ennemyY,thisX,thisY)==-7||this->trace(ennemyX,ennemyY,thisX,thisY)==-8 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-1||this->trace(ennemyX,ennemyY,thisX,thisY)==1){
+                return 6+playerMove;
             }
             else{
                 return 0;
             }
-        default:
-            return 0;
+            break;
+        
+        }
 
-    }
+        
+    return 0;    
 };
+
 Pawn::~Pawn(){};
