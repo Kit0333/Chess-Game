@@ -15,9 +15,9 @@ int main(int argc,char* argv[]){
     SDL_Texture *pawnImageChosen=game.loadTexture("res/img/pawnChosen.png");
     SDL_Texture *pawnImageCanBeAttacked=game.loadTexture("res/img/pawnGetAttack.png");
 
-    SDL_Texture *pawn2Image=game.loadTexture("res/img/bishop2.png");
-    SDL_Texture *pawn2ImageChosen=game.loadTexture("res/img/bishop2Chosen.png");
-    SDL_Texture *pawn2ImageCanBeAttacked=game.loadTexture("res/img/bishop2GetAttack.png");
+    SDL_Texture *pawn2Image=game.loadTexture("res/img/pawn2.png");
+    SDL_Texture *pawn2ImageChosen=game.loadTexture("res/img/pawn2Chosen.png");
+    SDL_Texture *pawn2ImageCanBeAttacked=game.loadTexture("res/img/pawn2GetAttack.png");
 
     //Bishop's images:
     SDL_Texture *bishopImage=game.loadTexture("res/img/bishop.png");
@@ -40,7 +40,7 @@ int main(int argc,char* argv[]){
     //Rook's images:
     SDL_Texture *rookImage=game.loadTexture("res/img/rook.png");
     SDL_Texture *rookImageChosen=game.loadTexture("res/img/rookChosen.png");
-    SDL_Texture *rookImageCanBeAttacked=game.loadTexture("res/img/krookGetAttack.png");
+    SDL_Texture *rookImageCanBeAttacked=game.loadTexture("res/img/rookGetAttack.png");
 
     SDL_Texture *rook2Image=game.loadTexture("res/img/rook2.png");
     SDL_Texture *rook2ImageChosen=game.loadTexture("res/img/rook2Chosen.png");
@@ -74,8 +74,8 @@ int main(int argc,char* argv[]){
     Board *board=new Board();
     int actualBoardNum(-1);
     int selectedPawn[2]={-1,-1};
-    int xPawn(0);
-    int yPawn(0);
+    int xPawn(-1);
+    int yPawn(-1);
     bool hasBeenChosed=false;
     bool canAttack;
     int hasBeenChosedNumber(-1);
@@ -96,63 +96,78 @@ int main(int argc,char* argv[]){
             if (mouseButton==0){
                 SDL_GetMouseState(&posXMouse,&posYMouse);
                 if (posXMouse>840){
-                    xPawn=(posXMouse-840)%135;
-                    yPawn=posYMouse%135;
+                    xPawn=(posXMouse-840)/135;
+                    yPawn=posYMouse/135;
+                    std::cout<<xPawn<<" "<<yPawn<<std::endl;
                     if(game.getActualPlayer()==Player::J1){
                         //We check which case got clicked on which turn (you can't click on ennemy's pawn on your turn )
                         //So later we can show on which case you can go with the specific pawn
-                        if(board->getBoardN(xPawn,yPawn)<7 && board->getBoardN(xPawn,yPawn)!=0 && hasBeenChosed==false){
+                        if(board->getBoardN(yPawn,xPawn)<7 && board->getBoardN(yPawn,xPawn)!=0 ){
                             /*When nodoy is ready to attack, in selectedPawn we stock x,y of the pawn that we selected to be ready to attack*/
                             selectedPawn[0]=xPawn;
                             selectedPawn[1]=yPawn;
+                            hasBeenChosed=true;
+                            hasBeenChosedNumber=board->getBoardN(selectedPawn[1],selectedPawn[0]);
                         }
-                        else if ((board->getBoardN(xPawn,yPawn)>10 || board->getBoardN(xPawn,yPawn)==0 )&& hasBeenChosed==true&& xPawn!=selectedPawn[0] && yPawn!=selectedPawn[1]){// we verify if the selected one where we attack is an ennemy or a void case 
+                        else if ((board->getBoardN(yPawn,xPawn)>10 || board->getBoardN(yPawn,xPawn)==0 )&& hasBeenChosed==true&& (xPawn!=selectedPawn[0] || yPawn!=selectedPawn[1])){// we verify if the selected one where we attack is an ennemy or a void case 
                             //One pawn is already selected to attack, now it's the click to attack
-        
-                            board->modify(0,selectedPawn[0],selectedPawn[1]);
-                            board->modify(hasBeenChosedNumber,xPawn,yPawn);
-                            hasBeenChosed=false;//reset after attack
-                            hasBeenChosedNumber=-1;//reset after attack
+                                if(board->canBeAttacked(board->getBoardN(selectedPawn[1],selectedPawn[0]),selectedPawn[0],selectedPawn[1],xPawn,yPawn,board->getBoardN(yPawn,xPawn),game)!=0){//we can attack
+                                std::cout<<" the one who attack : "<<board->getBoardN(selectedPawn[1],selectedPawn[0])<<std::endl;
+                                board->modify(0,selectedPawn[0],selectedPawn[1]);
+                                board->modify(hasBeenChosedNumber,xPawn,yPawn);
+                                hasBeenChosed=false;
+                                hasBeenChosedNumber=-1;
+                                game.playerSwitch();
+                                selectedPawn[0]=-1;
+                                selectedPawn[1]=-1;
+                                }
                         }
                     }
-                    else{
-                        if(board->getBoardN(xPawn,yPawn)>6 && hasBeenChosed==false){
+                    
+                    if(game.getActualPlayer()==Player::J2){
+                        if(board->getBoardN(yPawn,xPawn)>6 && board->getBoardN(yPawn,xPawn)!=0){
                             selectedPawn[0]=xPawn;
                             selectedPawn[1]=yPawn;
+                            hasBeenChosed=true;
+                            hasBeenChosedNumber=board->getBoardN(selectedPawn[1],selectedPawn[0]);
                             }
-                        else if (board->getBoardN(xPawn,yPawn)<7 && hasBeenChosed==true &&xPawn!=selectedPawn[0]&&yPawn!=selectedPawn[1]){
-                            board->modify(0,selectedPawn[0],selectedPawn[1]);
-                            board->modify(hasBeenChosedNumber,xPawn,yPawn);
-                            hasBeenChosed=false;
-                            hasBeenChosedNumber=-1;
-                        }
-                        }
+                        else if (board->getBoardN(yPawn,xPawn)<7 && hasBeenChosed==true &&(xPawn!=selectedPawn[0]||yPawn!=selectedPawn[1])){
+                            if(board->canBeAttacked(board->getBoardN(selectedPawn[1],selectedPawn[0]),selectedPawn[0],selectedPawn[1],xPawn,yPawn,board->getBoardN(yPawn,xPawn),game)!=0){
+                                board->modify(0,selectedPawn[0],selectedPawn[1]);
+                                board->modify(hasBeenChosedNumber,xPawn,yPawn);
+                                hasBeenChosed=false;
+                                hasBeenChosedNumber=-1;
+                                game.playerSwitch();
+                                selectedPawn[0]=-1;
+                                selectedPawn[1]=-1;
+                                }
+                            
+                            }
+                       }
+                      
                 }
-            break;
             }
         //starting rendering
         game.clear();
         //renders the board
         game.render(boardImage,0,0,userScreenWidth,userScreenHeight);
+        std::cout<<selectedPawn[0]<<"\n";
+        std::cout<<selectedPawn[1]<<"\n";
         //renders the pawn on the board
         for(int i=0;i<8;i++){
             for(int j=0;j<8;j++){
                 actualBoardNum=board->getBoardN(i,j);
-                //if(hasBeenChosed==true){
-                //    int chosenNumber=board->getBoardN(onClickPawn[0],onClickPawn[1]);
-                //}
                 switch(actualBoardNum){
                     //The side on the bot (white)
                     case 1 :
-                        if (board->getBoardN(xPawn,yPawn)==1 &&yPawn==i && xPawn==j && hasBeenChosed==false){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==1 &&selectedPawn[1]==i && selectedPawn[0]==j && hasBeenChosed==true){
                             game.render(pawnImageChosen,845+(135*j),i*135+5,127,127);
-                            hasBeenChosed=true;
-                            hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{            
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,1,game)){
                                     case 0:
+                                        game.render(pawnImage,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(pawnImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -163,16 +178,18 @@ int main(int argc,char* argv[]){
                                 game.render(pawnImage,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 2:
-                        if (board->getBoardN(xPawn,yPawn)==2 &&yPawn==i && xPawn==j && hasBeenChosed==false){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==2 &&selectedPawn[1]==i && selectedPawn[0]==j && hasBeenChosed==true){
                             game.render(bishopImageChosen,845+(135*j),i*135+5,127,127);
-                            hasBeenChosed=true;
+                            
                             hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,2,game)){
                                     case 0:
+                                        game.render(bishopImage,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(bishopImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -183,16 +200,16 @@ int main(int argc,char* argv[]){
                                 game.render(bishopImage,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 3:
-                        if (board->getBoardN(xPawn,yPawn)==3 &&yPawn==i && xPawn==j && hasBeenChosed==false){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==3 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(knightImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,3,game)){
                                     case 0:
+                                        game.render(knightImage,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(knightImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -203,16 +220,16 @@ int main(int argc,char* argv[]){
                                 game.render(knightImage,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 4:
-                        if (board->getBoardN(xPawn,yPawn)==4 &&yPawn==i && xPawn==j && hasBeenChosed==false){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==4 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(rookImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,4,game)){
                                     case 0:
+                                        game.render(rookImage,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(rookImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -223,16 +240,16 @@ int main(int argc,char* argv[]){
                                 game.render(rookImage,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 5:
-                        if (board->getBoardN(xPawn,yPawn)==5 &&yPawn==i && xPawn==j && hasBeenChosed==false){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==5 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(queenImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,5,game)){
                                     case 0:
+                                        game.render(queenImage,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(queenImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -243,16 +260,16 @@ int main(int argc,char* argv[]){
                                 game.render(queenImage,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 6:
-                        if (board->getBoardN(xPawn,yPawn)==6 &&yPawn==i && xPawn==j){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==6 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(kingImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,6,game)){
                                     case 0:
+                                        game.render(kingImage,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(kingImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -263,16 +280,16 @@ int main(int argc,char* argv[]){
                                 game.render(kingImage,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 11 :                        
-                        if (board->getBoardN(xPawn,yPawn)==11 &&yPawn==i && xPawn==j && hasBeenChosed==false){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==11 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(pawn2ImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,11,game)){
                                     case 0://it return 0 when this
+                                        game.render(pawn2Image,845+(135*j),i*135,130,130);
                                         break;
                                         //we check if he can  touch him
                                         //(board->getBoardN(onClickPawn[0]+1,onClickPawn[1]-1)==board->getBoardN(i,j) || board->getBoardN(onClickPawn[0]+1,onClickPawn[1]+1)==board->getBoardN(i,j))
@@ -287,16 +304,16 @@ int main(int argc,char* argv[]){
                                 game.render(pawn2Image,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 12:
-                        if (board->getBoardN(xPawn,yPawn)==12 &&yPawn==i && xPawn==j){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==12 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(bishop2ImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,12,game)){
                                     case 0:
+                                        game.render(bishop2Image,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(bishop2ImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -307,16 +324,16 @@ int main(int argc,char* argv[]){
                                 game.render(bishop2Image,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 13:
-                        if (board->getBoardN(xPawn,yPawn)==13 &&yPawn==i && xPawn==j){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==13 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(knight2ImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,13,game)){
                                     case 0:
+                                        game.render(knight2Image,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(knight2ImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -327,16 +344,16 @@ int main(int argc,char* argv[]){
                                 game.render(knight2Image,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 14:
-                        if (board->getBoardN(xPawn,yPawn)==14 &&yPawn==i && xPawn==j){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==14 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(rook2ImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,14,game)){
                                     case 0:
+                                        game.render(rook2Image,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(rook2ImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -347,16 +364,16 @@ int main(int argc,char* argv[]){
                                 game.render(rook2Image,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 15:
-                        if (board->getBoardN(xPawn,yPawn)==15 &&yPawn==i && xPawn==j){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==15 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(queen2ImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,15,game)){
                                     case 0:
+                                        game.render(queen2Image,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(queen2ImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -367,17 +384,16 @@ int main(int argc,char* argv[]){
                                 game.render(queen2Image,845+(135*j),i*135,130,130);
                             }
                         }
-
+                        break;
                     case 16:
-                        if (board->getBoardN(xPawn,yPawn)==3 &&yPawn==i && xPawn==j){
+                        if (board->getBoardN(selectedPawn[1],selectedPawn[0])==3 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
                                 game.render(king2ImageChosen,845+(135*j),i*135+5,127,127);
-                                hasBeenChosed=true;
-                                hasBeenChosedNumber=board->getBoardN(i,j);
                         }
                         else{
-                            if(hasBeenChosed==true && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
-                                switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                            if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
+                                switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,16,game)){
                                     case 0:
+                                        game.render(king2Image,845+(135*j),i*135,130,130);
                                         break;
                                     default:    
                                         game.render(king2ImageCanBeAttacked,845+(135*j),i*135,130,130);
@@ -388,9 +404,10 @@ int main(int argc,char* argv[]){
                                 game.render(king2Image,845+(135*j),i*135,130,130);
                             }
                         }
+                        break;
                     case 0://if there is no pawn on this case
-                        if(hasBeenChosed==true){
-                            switch(board->canBeAttacked(hasBeenChosedNumber,j,i,xPawn,yPawn)){
+                        if(hasBeenChosed==true && hasBeenChosedNumber!=-1 ){
+                            switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,0,game)){
                                     case 0:
                                         break;
                                     default:    
@@ -402,16 +419,17 @@ int main(int argc,char* argv[]){
                                         }
                                         break;
                             }
-                        } 
+                        }
+                        break; 
             }
         }
 
     //end of for 
-        }
+    }
     game.display();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     }
+    board->~Board();
     return 0;
 }
-
+           
