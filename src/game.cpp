@@ -188,6 +188,7 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
     int count(1);
     int playerMove;
     int pawnControl;
+    int switchCase;
     if(game.getActualPlayer()==Player::J1){
         playerMove=0;
         pawnControl=1;
@@ -197,43 +198,74 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
         pawnControl=-1;
     }
     switch(ennemyPawnType){
+        case 1:
+            switchCase=1;
+            break;
+        case 2:
+            switchCase=2;
+            break;
+        case 3:
+            switchCase=3;
+            break;
+        case 4:
+            switchCase=4;
+            break;
+        case 5:
+            switchCase=5;
+            break;
+        case 6:
+            switchCase=6;
+            break;    
         case 11:
-            ennemyPawnType=1;
+            switchCase=1; 
             break;
+            
         case 12:
-            ennemyPawnType=2;
-            break; 
-        case 13:
-            ennemyPawnType=3;
+            switchCase=2;
             break;
+            
+        case 13:
+            switchCase=3;
+            break;
+            
         case 14:
-            ennemyPawnType=4;
+            switchCase=4;
             break;
         case 15:
-            ennemyPawnType=5;
+            switchCase=5;
             break;
-        case 16:
-            ennemyPawnType=6;
+        case 16: 
+            switchCase=6;
             break;
     }
 
-    switch(ennemyPawnType){
+    switch(switchCase){
         case 1://if ennemy is a white pawn
-         /*
-         We multiply by 1 if the ennemy is a white pawn,and -1 if ennemy is a black pawn.
-         Dark and white pawn got an opposite movement so if one is positive, the opposite is negative.
-         */
-            if ((this->trace(ennemyX,ennemyY,thisX,thisY)==(9*pawnControl) &&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==(7*pawnControl) &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==(8*pawnControl) && thisPawnType==0)){
+            if(ennemyPawnType==11){
+                if((this->trace(ennemyX,ennemyY,thisX,thisY)==-9 &&thisPawnType<10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-7 &&thisPawnType<10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-8 && thisPawnType==0)){
+                return 1+playerMove;
+                }
+            }
+            else{
+                if ((this->trace(ennemyX,ennemyY,thisX,thisY)==9&&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
                 return 1+playerMove;
             }
             else{
                 return 0;
             }
+            }
             break;
         case 2://if ennemy is a white bishop
             count=1;
-            if (thisPawnType<10 &&thisPawnType!=0){
-                return 0;
+            if(ennemyPawnType==12){
+                if(thisPawnType!=1&&thisPawnType!=2&&thisPawnType!=3&&thisPawnType!=4&&thisPawnType!=5&&thisPawnType!=6&&thisPawnType!=0){ 
+                    return 0;
+                } 
+            }
+            else{
+                if(thisPawnType<10 &&thisPawnType!=0){
+                    return 0;
+                }
             }
             if ((thisY<ennemyY) &&(thisX>ennemyX)){
                 for(int i=1;i<-(thisY-ennemyY);i++){
@@ -292,9 +324,16 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             break;
         case 3://if ennemy is a white knight
-            if (thisPawnType!=11&&thisPawnType!=12&&thisPawnType!=13&&thisPawnType!=14&&thisPawnType!=15&&thisPawnType!=16&&thisPawnType!=0){
-                return 0;
+            if (ennemyPawnType==13){
+                if(thisPawnType!=1&&thisPawnType!=2&&thisPawnType!=3&&thisPawnType!=4&&thisPawnType!=5&&thisPawnType!=6&&thisPawnType!=0){
+                    return 0;
+                }
             }
+            else{  
+                if (thisPawnType!=11&&thisPawnType!=12&&thisPawnType!=13&&thisPawnType!=14&&thisPawnType!=15&&thisPawnType!=16&&thisPawnType!=0){
+                return 0;
+                }
+            }    
             if(((ennemyX-1)==thisX &&(ennemyY-2)==thisY) || ((ennemyX+1)==thisX&&(ennemyY-2)==thisY) ||
                ((ennemyX-2)==thisX &&(ennemyY-1)==thisY) || ((ennemyX+2)==thisX&&(ennemyY-1)==thisY) ||
                ((ennemyX-2)==thisX &&(ennemyY+1)==thisY) || ((ennemyX+2)==thisX&&(ennemyY+1)==thisY) ||
@@ -307,8 +346,15 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             break;
             
         case 4://if ennemy is a white rook
-            if(thisPawnType<10&&thisPawnType!=0){
+            if(ennemyPawnType==14){
+                if(thisPawnType!=1&&thisPawnType!=2&&thisPawnType!=3&&thisPawnType!=4&&thisPawnType!=5&&thisPawnType!=6&&thisPawnType!=0){
                 return 0;
+                }
+            }
+            else{
+                if(thisPawnType<10&&thisPawnType!=0){
+                return 0;
+                }
             }
             count=1;
             if ((ennemyX==thisX)&&(ennemyY>thisY)){
@@ -367,6 +413,16 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             break;
         case 5:// if ennemy is a white queen ( can use the code from case 2 and 4( bishop + rook))
+            if(ennemyPawnType==15){
+                if(thisPawnType!=1&&thisPawnType!=2&&thisPawnType!=3&&thisPawnType!=4&&thisPawnType!=5&&thisPawnType!=6&&thisPawnType!=0){
+                    return 0;
+                }
+            }
+            else{
+                if(thisPawnType<10&&thisPawnType!=0){
+                    return 0;
+                }
+            }
             count=1;
             if ((thisY<ennemyY) &&(thisX>ennemyX)){
                 for(int i=1;i<-(thisY-ennemyY);i++){
@@ -480,8 +536,15 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             break;
                     
         case 6://if ennemy is the white king
-            if (thisPawnType<10&&thisPawnType!=0){
+            if(ennemyPawnType==16){
+                if(thisPawnType!=1&&thisPawnType!=2&&thisPawnType!=3&&thisPawnType!=4&&thisPawnType!=5&&thisPawnType!=6&&thisPawnType!=0){
                 return 0;
+                }
+            }
+            else{
+                if(thisPawnType<10&&thisPawnType!=0){
+                return 0;
+                }
             }
             if (this->trace(ennemyX,ennemyY,thisX,thisY)==9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==8||this->trace(ennemyX,ennemyY,thisX,thisY)==7||this->trace(ennemyX,ennemyY,thisX,thisY)==-7||this->trace(ennemyX,ennemyY,thisX,thisY)==-8 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-9 ||this->trace(ennemyX,ennemyY,thisX,thisY)==-1||this->trace(ennemyX,ennemyY,thisX,thisY)==1){
                 return 6+playerMove;
@@ -493,7 +556,7 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
         
         }
 
-        
+    
     return 0;    
 };
 
