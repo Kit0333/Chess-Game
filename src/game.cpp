@@ -186,12 +186,32 @@ void Board::modify(int newNum,int x,int y){
 };
 int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY,int thisPawnType,Game game){
     int count(1);
-    int playerMove=NULL;
-    if (game.getActualPlayer()==Player::J1){
+    int playerMove;
+    if(game.getActualPlayer()==Player::J1){
         playerMove=0;
     }
     else{
         playerMove=10;
+    }
+    switch(ennemyPawnType){
+        case 11:
+            ennemyPawnType=1;
+            break;
+        case 12:
+            ennemyPawnType=2;
+            break; 
+        case 13:
+            ennemyPawnType=3;
+            break;
+        case 14:
+            ennemyPawnType=4;
+            break;
+        case 15:
+            ennemyPawnType=5;
+            break;
+        case 16:
+            ennemyPawnType=6;
+            break;
     }
 
     switch(ennemyPawnType){
