@@ -1,4 +1,5 @@
 #include <headers/game.hpp>
+#include <headers/board.hpp>
 #include <iostream>
 GameState Game::getGameState(){
     return m_gameState;
@@ -141,6 +142,52 @@ Board::~Board() {
 int Board::getBoardN(int y,int x){
     return *(m_board+(y*8)+x);
 };
+int Game::selectNewPawn(int x,int y,int screenWidth,int screenHeight){
+    this->clear();
+    SDL_Texture * selectPawn=this->loadTexture("res/img/selectPawn.png");
+    bool selected(false);
+    int playerPawn;
+    int finalPawn;
+    this->clear();
+    this->render(selectPawn,0,0,screenWidth,screenHeight);
+    this->display();
+
+    if(this->getActualPlayer()==Player::J1){
+        playerPawn=0;
+    }
+    else{
+        playerPawn=10;
+    }
+    while(selected==false){
+        SDL_Event event;
+        SDL_PollEvent(&event);
+        switch(event.type){
+            case SDL_QUIT:
+               selected=true;
+               this->gameStateChange(GameState::EXIT);
+            case SDL_KEYDOWN:
+                switch(event.key.keysym.sym){
+                    case SDLK_a:
+                        selected=true;
+                        finalPawn=2;
+                        break;
+                    case SDLK_z:
+                        selected=true;
+                        finalPawn=3;
+                        break;
+                    case SDLK_e:
+                        selected=true;
+                        finalPawn=4;
+                        break;
+                    case SDLK_r:
+                        selected=true;
+                        finalPawn=5;
+                        break;
+                }                 
+        }
+    }
+    return (finalPawn+playerPawn);
+};
 Pawn::Pawn(int type){
     m_type=type;
     switch(type){
@@ -243,7 +290,7 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
         case 1://if ennemy is a white pawn
             if(ennemyPawnType==11){
                 if (ennemyY==1){
-                    if((this->trace(ennemyX,ennemyY,thisX,thisY)==-16  &&thisPawnType==0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-9 &&thisPawnType<10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-7 &&thisPawnType<10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-8 && thisPawnType==0)){
+                    if(((this->trace(ennemyX,ennemyY,thisX,thisY)==-16  &&thisPawnType==0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-9 &&thisPawnType<10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-7 &&thisPawnType<10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==-8 && thisPawnType==0))&&this->getBoardN(ennemyY+1,ennemyX)==0){
                         return 1+playerMove;
                     }
                 }
@@ -256,7 +303,7 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
             }
             else{
                 if(ennemyY==6){
-                    if((this->trace(ennemyX,ennemyY,thisX,thisY)==16&&thisPawnType==0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==9&&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0)){
+                    if(((this->trace(ennemyX,ennemyY,thisX,thisY)==16&&thisPawnType==0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==9&&thisPawnType>10 && thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==7 &&thisPawnType>10 &&thisPawnType!=0)||(this->trace(ennemyX,ennemyY,thisX,thisY)==8 && thisPawnType==0))&&this->getBoardN(ennemyY-1,ennemyX)==0){
                        return 1+playerMove;
                     }
                     else{
@@ -578,4 +625,61 @@ int Board::canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,i
     return 0;    
 };
 
+bool Board::isKingAlive(Game game)const{
+/*
+We return a boolean about the king statu.
+If there is not king of the actual player on the board, it return false , and in the contrary case
+it returns a true boolean to signify the king is still here, on the board.
+
+The fonction take the game argument to use the method " getActualPlayer()" to know who's playing.
+So with that , we know about which player's king the program will work on.
+*/
+    Player actualPlayer=game.getActualPlayer();
+    int kingNum;
+    if(actualPlayer==Player::J1){
+        kingNum=6;
+    }
+    else{
+        kingNum=16;
+    }
+    for(int i=0;i<8;i++){
+        for(int j=0;j<8;j++){
+            if(*(m_board+(i*8)+j)==kingNum){
+                return true;
+            }
+        }
+    }
+    return false;
+    
+};
+
+
+
+void Board::restartBoard(void){
+    *(m_board)=14;
+    *(m_board+1)=13;
+    *(m_board+2)=12;
+    *(m_board+3)=15;
+    *(m_board+4)=16;
+    *(m_board+5)=12;
+    *(m_board+6)=13;
+    *(m_board+7)=14;
+    for(int j=0;j<8;j++){
+        *(m_board+8+j)=11;
+        *(m_board+16+j)=0;
+        *(m_board+24+j)=0;
+        *(m_board+32+j)=0;
+        *(m_board+40+j)=0;
+        *(m_board+48+j)=1;
+    }
+    *(m_board+56)=4;
+    *(m_board+56+1)=3;
+    *(m_board+56+2)=2;
+    *(m_board+56+3)=5;
+    *(m_board+56+4)=6;
+    *(m_board+56+5)=2;
+    *(m_board+56+6)=3;
+    *(m_board+56+7)=4;
+};
+           
 Pawn::~Pawn(){};
