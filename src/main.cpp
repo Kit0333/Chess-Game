@@ -1,5 +1,6 @@
 #include <iostream>
 #include <headers/game.hpp>
+#include <headers/board.hpp>
 #include <thread>
 #include <chrono>
 
@@ -68,6 +69,13 @@ int main(int argc,char* argv[]){
     SDL_Texture *blueRect=game.loadTexture("res/img/blueR.png");
     SDL_Texture *redRect=game.loadTexture("res/img/redR.png");
 
+
+    //Winner image
+    SDL_Texture *player1Win=game.loadTexture("res/img/player1Win.png");
+    SDL_Texture *player2Win=game.loadTexture("res/img/player2Win.png");
+
+    //Normal variables declaration
+
     int posXMouse(0);
     int posYMouse(0);
     Uint32 click;
@@ -79,9 +87,12 @@ int main(int argc,char* argv[]){
     bool hasBeenChosed=false;
     bool canAttack;
     int hasBeenChosedNumber(-1);
+    int winner;
+    int resolutionWidth(userScreenWidth-userScreenHeight);
+    int resolutionHeight(userScreenHeight);
 
-    
-
+    //Game start here
+    std::cout<<userScreenWidth<<" "<<userScreenHeight<<std::endl;
     while (game.getGameState()!=GameState::EXIT){
         SDL_Event event;
         SDL_PollEvent(&event);
@@ -90,15 +101,13 @@ int main(int argc,char* argv[]){
         case SDL_QUIT://Shut down the game
             game.gameStateChange(GameState::EXIT);
             break;
-
         case SDL_MOUSEBUTTONDOWN://Get mouse position
             int mouseButton=game.mousePress(event.button);
             if (mouseButton==0){
                 SDL_GetMouseState(&posXMouse,&posYMouse);
-                if (posXMouse>840){
-                    xPawn=(posXMouse-840)/135;
-                    yPawn=posYMouse/135;
-                    std::cout<<xPawn<<" "<<yPawn<<std::endl;
+                if (posXMouse>resolutionWidth){
+                    xPawn=(posXMouse-resolutionWidth)/(resolutionHeight/8);
+                    yPawn=posYMouse/(resolutionHeight/8);
                     if(game.getActualPlayer()==Player::J1){
                         //We check which case got clicked on which turn (you can't click on ennemy's pawn on your turn )
                         //So later we can show on which case you can go with the specific pawn
@@ -117,13 +126,28 @@ int main(int argc,char* argv[]){
                                 board->modify(hasBeenChosedNumber,xPawn,yPawn);
                                 hasBeenChosed=false;
                                 hasBeenChosedNumber=-1;
-                                game.playerSwitch();
+                                
                                 selectedPawn[0]=-1;
                                 selectedPawn[1]=-1;
+                                if((board->isKingAlive(game))==false){
+                                    game.gameStateChange(GameState::EXIT);
+                                    if(game.getActualPlayer()==Player::J1){
+                                        winner=2;
+                                    }
+                                    else{
+                                        winner=1;
+                                    }
                                 }
+                                else{
+                                    if(board->getBoardN(yPawn,xPawn)==1 && yPawn==0){
+                                        board->modify(game.selectNewPawn(xPawn,yPawn,userScreenWidth,userScreenHeight),xPawn,yPawn);//selection only occur if we can continu the game
+                                    }
+                                }
+                                game.playerSwitch();
+                            }
                         }
                     }
-                    
+
                     if(game.getActualPlayer()==Player::J2){
                         if(board->getBoardN(yPawn,xPawn)>6 && board->getBoardN(yPawn,xPawn)!=0){
                             selectedPawn[0]=xPawn;
@@ -135,17 +159,36 @@ int main(int argc,char* argv[]){
                             if(board->canBeAttacked(board->getBoardN(selectedPawn[1],selectedPawn[0]),selectedPawn[0],selectedPawn[1],xPawn,yPawn,board->getBoardN(yPawn,xPawn),game)!=0){
                                 board->modify(0,selectedPawn[0],selectedPawn[1]);
                                 board->modify(hasBeenChosedNumber,xPawn,yPawn);
+                                
                                 hasBeenChosed=false;
                                 hasBeenChosedNumber=-1;
-                                game.playerSwitch();
+                               
                                 selectedPawn[0]=-1;
                                 selectedPawn[1]=-1;
+                                if((board->isKingAlive(game))==false){
+                                    game.gameStateChange(GameState::EXIT);
+                                    if(game.getActualPlayer()==Player::J1){
+                                        winner=2;
+                                    }
+                                    else{
+                                        winner=1;
+                                    }
                                 }
-                            
+                                else{
+                                    if(board->getBoardN(yPawn,xPawn)==11 && yPawn==7){
+                                        board->modify(game.selectNewPawn(xPawn,yPawn,userScreenWidth,userScreenHeight),xPawn,yPawn);
+                                    }
+                                }
+                                game.playerSwitch();
                             }
-                       }
+                            
+                        }
+                    }
                       
                 }
+            }
+            else{
+                board->restartBoard();
             }
         //starting rendering
         game.clear();
@@ -161,27 +204,27 @@ int main(int argc,char* argv[]){
                     //The side on the bot (white)
                     case 1 :
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==1 &&selectedPawn[1]==i && selectedPawn[0]==j && hasBeenChosed==true){
-                            game.render(pawnImageChosen,845+(135*j),i*135+5,127,127);
+                            game.render(pawnImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{            
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,1,game)){
                                     case 0:
-                                        game.render(pawnImage,845+(135*j),i*135,130,130);
+                                        game.render(pawnImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(pawnImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(pawnImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(pawnImage,845+(135*j),i*135,130,130);
+                                game.render(pawnImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 2:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==2 &&selectedPawn[1]==i && selectedPawn[0]==j && hasBeenChosed==true){
-                            game.render(bishopImageChosen,845+(135*j),i*135+5,127,127);
+                            game.render(bishopImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             
                             hasBeenChosedNumber=board->getBoardN(i,j);
                         }
@@ -189,15 +232,15 @@ int main(int argc,char* argv[]){
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,2,game)){
                                     case 0:
-                                        game.render(bishopImage,845+(135*j),i*135,130,130);
+                                        game.render(bishopImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(bishopImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(bishopImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(bishopImage,845+(135*j),i*135,130,130);
+                                game.render(bishopImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
@@ -209,15 +252,15 @@ int main(int argc,char* argv[]){
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,3,game)){
                                     case 0:
-                                        game.render(knightImage,845+(135*j),i*135,130,130);
+                                        game.render(knightImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(knightImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(knightImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(knightImage,845+(135*j),i*135,130,130);
+                                game.render(knightImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
@@ -229,179 +272,179 @@ int main(int argc,char* argv[]){
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,4,game)){
                                     case 0:
-                                        game.render(rookImage,845+(135*j),i*135,130,130);
+                                        game.render(rookImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(rookImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(rookImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(rookImage,845+(135*j),i*135,130,130);
+                                game.render(rookImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 5:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==5 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(queenImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(queenImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,5,game)){
                                     case 0:
-                                        game.render(queenImage,845+(135*j),i*135,130,130);
+                                        game.render(queenImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(queenImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(queenImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(queenImage,845+(135*j),i*135,130,130);
+                                game.render(queenImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 6:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==6 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(kingImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(kingImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=1 && game.getActualPlayer()==Player::J2 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,6,game)){
                                     case 0:
-                                        game.render(kingImage,845+(135*j),i*135,130,130);
+                                        game.render(kingImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(kingImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(kingImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(kingImage,845+(135*j),i*135,130,130);
+                                game.render(kingImage,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 11 :                        
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==11 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(pawn2ImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(pawn2ImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,11,game)){
                                     case 0://it return 0 when this
-                                        game.render(pawn2Image,845+(135*j),i*135,130,130);
+                                        game.render(pawn2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                         //we check if he can  touch him
                                         //(board->getBoardN(onClickPawn[0]+1,onClickPawn[1]-1)==board->getBoardN(i,j) || board->getBoardN(onClickPawn[0]+1,onClickPawn[1]+1)==board->getBoardN(i,j))
                                         //the code above is a test ,currently I'm not sure about the verification
                                     default:    
-                                        game.render(pawn2ImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(pawn2ImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                                 
                             }
                             else{//normal render when this pawn is not the selected one and it can be attacked by ennemy's pawn
-                                game.render(pawn2Image,845+(135*j),i*135,130,130);
+                                game.render(pawn2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 12:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==12 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(bishop2ImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(bishop2ImageChosen,resolutionWidth+((resolutionHeight/8)*j),i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,12,game)){
                                     case 0:
-                                        game.render(bishop2Image,845+(135*j),i*135,130,130);
+                                        game.render(bishop2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(bishop2ImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(bishop2ImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(bishop2Image,845+(135*j),i*135,130,130);
+                                game.render(bishop2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 13:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==13 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(knight2ImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(knight2ImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,13,game)){
                                     case 0:
-                                        game.render(knight2Image,845+(135*j),i*135,130,130);
+                                        game.render(knight2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(knight2ImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(knight2ImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(knight2Image,845+(135*j),i*135,130,130);
+                                game.render(knight2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 14:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==14 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(rook2ImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(rook2ImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,14,game)){
                                     case 0:
-                                        game.render(rook2Image,845+(135*j),i*135,130,130);
+                                        game.render(rook2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(rook2ImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(rook2ImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(rook2Image,845+(135*j),i*135,130,130);
+                                game.render(rook2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 15:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==15 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(queen2ImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(queen2ImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,15,game)){
                                     case 0:
-                                        game.render(queen2Image,845+(135*j),i*135,130,130);
+                                        game.render(queen2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(queen2ImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(queen2ImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(queen2Image,845+(135*j),i*135,130,130);
+                                game.render(queen2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
                     case 16:
                         if (board->getBoardN(selectedPawn[1],selectedPawn[0])==3 &&selectedPawn[1]==i && selectedPawn[0]==j&& hasBeenChosed==true){
-                                game.render(king2ImageChosen,845+(135*j),i*135+5,127,127);
+                                game.render(king2ImageChosen,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                         }
                         else{
                             if(hasBeenChosedNumber!=-1 && game.getActualPlayer()==Player::J1 ){//we check if this pawn can be attacked
                                 switch(board->canBeAttacked(hasBeenChosedNumber,selectedPawn[0],selectedPawn[1],j,i,16,game)){
                                     case 0:
-                                        game.render(king2Image,845+(135*j),i*135,130,130);
+                                        game.render(king2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                     default:    
-                                        game.render(king2ImageCanBeAttacked,845+(135*j),i*135,130,130);
+                                        game.render(king2ImageCanBeAttacked,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         break;
                                 }
                             }
                             else{
-                                game.render(king2Image,845+(135*j),i*135,130,130);
+                                game.render(king2Image,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                             }
                         }
                         break;
@@ -412,24 +455,40 @@ int main(int argc,char* argv[]){
                                         break;
                                     default:    
                                         if(game.getActualPlayer()==Player::J1){
-                                            game.render(blueRect,845+(135*j),i*135,130,130);   
+                                            game.render(blueRect,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);   
                                         }
                                         else{
-                                            game.render(redRect,845+(135*j),i*135,130,130);
+                                            game.render(redRect,resolutionWidth+((resolutionHeight/8)*j)+3,i*(resolutionHeight/8),(resolutionHeight/8)-5,(resolutionHeight/8)-5);
                                         }
                                         break;
                             }
                         }
                         break; 
+                    }
+                }
+
+    
+            }
+            game.display();
             }
         }
-
-    //end of for 
+    
+    //Game shutting down , it show the winner and after that, it closes.
+    game.clear();
+    if(winner==1){
+        game.render(player1Win,0,0,userScreenWidth,userScreenHeight);
+    }
+    else if (winner==2){
+        game.render(player2Win,0,0,userScreenWidth,userScreenHeight);
     }
     game.display();
-    }
-    }
+    std::chrono::seconds dura( 5);
+    std::this_thread::sleep_for( dura );
+    game.clear();
+    game.cleanup();
     board->~Board();
     return 0;
 }
-           
+
+
+             
