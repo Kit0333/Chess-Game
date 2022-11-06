@@ -5,6 +5,7 @@
 
 enum class GameState{PLAY,EXIT};
 enum class Player{J1,J2};
+
 class Game{
 public:
     Game(const char* title,Uint32 flags,int &width,int &height);
@@ -18,14 +19,14 @@ public:
     
     Player getActualPlayer();
     void playerSwitch();
+    int selectNewPawn(int x,int y,int screenWidth,int screenHeight);
 
     void run();
     void clear();
     void display();
-
+    void cleanup();
 private:
 
-    void cleanup();
 
     void UserScreenSize(int&width, int &height);
     Player m_player;
@@ -42,22 +43,3 @@ private:
     int m_type;
     const char* m_info;
 };
-
-class Board{
-public:
-    Board();
-    ~Board();
-    int getBoardN(int y,int x);
-    int trace(int &x1,int&y1,int&x2,int&y2);
-    int canBeAttacked(int ennemyPawnType,int ennemyX,int ennemyY ,int thisX,int thisY,int thisPawnType,Game Game);
-    void modify(int newNum,int x,int y);
-private:
-    int *m_board;
-    Pawn *m_pawn;
-    Pawn *m_bishop;
-    Pawn *m_knight;
-    Pawn *m_rook;
-    Pawn *m_queen;
-    Pawn *m_king;
-};
-
