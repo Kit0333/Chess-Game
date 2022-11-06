@@ -92,7 +92,6 @@ int main(int argc,char* argv[]){
     int resolutionHeight(userScreenHeight);
 
     //Game start here
-    std::cout<<userScreenWidth<<" "<<userScreenHeight<<std::endl;
     while (game.getGameState()!=GameState::EXIT){
         SDL_Event event;
         SDL_PollEvent(&event);
@@ -129,20 +128,11 @@ int main(int argc,char* argv[]){
                                 
                                 selectedPawn[0]=-1;
                                 selectedPawn[1]=-1;
-                                if((board->isKingAlive(game))==false){
-                                    game.gameStateChange(GameState::EXIT);
-                                    if(game.getActualPlayer()==Player::J1){
-                                        winner=2;
-                                    }
-                                    else{
-                                        winner=1;
-                                    }
+                                
+                                if(board->getBoardN(yPawn,xPawn)==1 && yPawn==0 && board->isKingAlive(game)==true){
+                                    board->modify(game.selectNewPawn(xPawn,yPawn,userScreenWidth,userScreenHeight),xPawn,yPawn);//selection only occur if we can continu the game
                                 }
-                                else{
-                                    if(board->getBoardN(yPawn,xPawn)==1 && yPawn==0){
-                                        board->modify(game.selectNewPawn(xPawn,yPawn,userScreenWidth,userScreenHeight),xPawn,yPawn);//selection only occur if we can continu the game
-                                    }
-                                }
+                                
                                 game.playerSwitch();
                             }
                         }
@@ -165,20 +155,11 @@ int main(int argc,char* argv[]){
                                
                                 selectedPawn[0]=-1;
                                 selectedPawn[1]=-1;
-                                if((board->isKingAlive(game))==false){
-                                    game.gameStateChange(GameState::EXIT);
-                                    if(game.getActualPlayer()==Player::J1){
-                                        winner=2;
-                                    }
-                                    else{
-                                        winner=1;
-                                    }
-                                }
-                                else{
-                                    if(board->getBoardN(yPawn,xPawn)==11 && yPawn==7){
+                                
+                                if(board->getBoardN(yPawn,xPawn)==11 && yPawn==7 && board->isKingAlive(game)==true){
                                         board->modify(game.selectNewPawn(xPawn,yPawn,userScreenWidth,userScreenHeight),xPawn,yPawn);
-                                    }
                                 }
+                                
                                 game.playerSwitch();
                             }
                             
@@ -190,12 +171,19 @@ int main(int argc,char* argv[]){
             else{
                 board->restartBoard();
             }
+        if((board->isKingAlive(game))==false){
+            game.gameStateChange(GameState::EXIT);
+            if(game.getActualPlayer()==Player::J1){
+                winner=2;
+            }
+            else{
+                winner=1;
+            }
+        }
         //starting rendering
         game.clear();
         //renders the board
         game.render(boardImage,0,0,userScreenWidth,userScreenHeight);
-        std::cout<<selectedPawn[0]<<"\n";
-        std::cout<<selectedPawn[1]<<"\n";
         //renders the pawn on the board
         for(int i=0;i<8;i++){
             for(int j=0;j<8;j++){
